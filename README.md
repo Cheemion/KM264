@@ -1,2 +1,2 @@
 # KM264
-a H.264 decoder
+a H.264 decoder and encoder
