@@ -2,7 +2,18 @@
 # 项目特定的逻辑。
 cmake_minimum_required (VERSION 3.8)
 project ("KM264_encoder")
+
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
 # 将源代码添加到此项目的可执行文件。
-add_executable (encoder "encoder.cpp"  "configure.h")
+add_executable (encoder 
+                "encoder.cpp"  
+                "header/common.h"
+                "header/configuration.h"
+                "header/nal_unit.h" 
+                "header/byte_writer.h"
+               )
+
 
 
