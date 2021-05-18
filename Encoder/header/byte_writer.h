@@ -2,7 +2,7 @@
  *  Usage: write bits from. the first come bits would occupy the MSB of a byte. Additionally, the ByteWriter needs to write a integral Byte
  *  Example:
  * 	std::ofstream outfile("test.txt", std::fstream::out | std::fstream::binary);
-	ByteWriter bw(outfile);
+	B bw(outfile);
 	bw.write(0x1,2);
 	bw.write(0x2,2);
 	bw.write(0x0,3);
