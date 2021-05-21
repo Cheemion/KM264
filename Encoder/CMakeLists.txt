@@ -13,6 +13,9 @@ add_executable (encoder
                 "header/configuration.h"
                 "header/nal_unit.h" 
                 "header/byte_writer.h"
+                "header/sps.h"
+                "header/pps.h"
+                "header/slice.h"
                )
 
 

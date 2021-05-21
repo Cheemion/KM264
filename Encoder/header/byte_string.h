@@ -7,6 +7,10 @@ uint32 TwoPowerOf(int a) {
     else
         return 1 << a;
 }
+int abs(int a) {
+    if(a > 0) return a;
+    else return -a;
+}
 class ByteString {
 private:
     std::list<byte> data;
@@ -78,11 +82,15 @@ public:
     void i(int v) {
 
     }
+    void se(int v) {
+        int absValue = abs(v);
+        uint32 codeNum = absValue * 2;
+        if(v > 0)
+            codeNum = codeNum - 1;
+        ue(codeNum);
+    }
     void me(byte v) {
 
-    }
-    void se(int v) {
-        
     }
     void te(byte v) {
 
