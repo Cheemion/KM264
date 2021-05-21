@@ -1,2 +1,2 @@
 # KM264
-a H.264 decoder and encoder
+A H.264 decoder and encoder with simple and clear explanation and comments for educational purpose.
