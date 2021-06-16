@@ -50,6 +50,7 @@ public:
 		this->nal_unit_p = nal_unit_p;
 	}
 	//每个Nal unit都必须保证写完1个byte
+	// 做了emulation prevention 处理
 	void writeNAL(std::ofstream& os) {
 		//NALheader 如果是0x00的话 不知道会不会对解码过程有影响。得看看nal里面的数据喝nal header 会不会构成一个 start_code
 		//我这边先是没有管，后面写其他东西的时候需要关注一下
@@ -62,7 +63,7 @@ public:
 		byte b1 = emulation_preverntion_three_byte;
 		byte b2 = emulation_preverntion_three_byte;
 		int bit_num;
-		//8 bits
+		//write integral 8 bits
 		while((bit_num = nal_unit_p->getNextSODB(b2)) == 8) {
 			if(b0 == 0x00 && b1 == 0x00 && (b2 == 0x00 || b2 == 0x01 || b2 == 0x02 || b2 == 0x03)) {
 				bw.write(emulation_preverntion_three_byte, 8);

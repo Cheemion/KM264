@@ -11,6 +11,7 @@ int abs(int a) {
     if(a > 0) return a;
     else return -a;
 }
+// a class to store byte, 
 class ByteString {
 private:
     std::list<byte> data;

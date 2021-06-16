@@ -6,7 +6,11 @@ private:
 	byte pic_parameter_set_id;                      //[0 255] ue(v);
 	byte seq_parameter_set_id;                      //[0 31] ue(v);
 	byte entropy_coding_mode_flag;                  //u(1) entropy_coding_mode_flag is equal to 0, (Exp-Golomb coded, see subclause 9.1 or CAVLC. 1 CABAC
-	byte pic_order_present_flag = 1;                // u(1) equal to 1 specifies poc 相关的参数是否在slice header出现, 还是使用默认的参数.
+	/*
+	// u(1) equal to 1 specifies poc 相关的参数是否在slice header出现, 还是使用默认的参数.
+	called bottom_field_pic_order_in_frame_present_flag in later version of h.264 recommandation
+	*/
+	byte pic_order_present_flag = 0;              
 	byte num_slice_groups_minus1 = 0;               // ue(v) plus 1 specifies the number of slice groups for a picture
 	byte num_ref_idx_l0_active_minus1; 			    // [0 31] ue(v) specifies the maximum reference index for reference picture list 0
 	byte num_ref_idx_l1_active_minus1;  // ue(v) same as above
@@ -17,7 +21,7 @@ private:
 	int chroma_qp_index_offset = 0; //se(v) [-12 12] specifies the offset that shall be added to QPY and QSY for addressing the table of QPC values for the Cb chroma component
 	byte deblocking_filter_control_present_flag = 0; //u(1) equal to 1 specifies that a set of syntax elements controlling the characteristics of the deblocking filter is present in the slice header
 	byte constrained_intra_pred_flag = 0; //u(1) 在intra模式下，能否使用通过inter预测的MB 作为使用.  0代表可以,1代表有constrained
-	byte  redundant_pic_cnt_present_flag = 0; //u(1)  equal to 0 specifies that the redundant_pic_cnt syntax element is not present in slice headers, data partitions B, and data partitions C that refer (either directly or by association with a corresponding data partition A) to the picture parameter set.
+	byte redundant_pic_cnt_present_flag = 0; //u(1)  equal to 0 specifies that the redundant_pic_cnt syntax element is not present in slice headers, data partitions B, and data partitions C that refer (either directly or by association with a corresponding data partition A) to the picture parameter set.
 private:
     bool isInitialzed = false;
 	ByteString byteString;
@@ -29,7 +33,7 @@ public:
 		res.pic_parameter_set_id = id;
 		id = (id + 1) % 256;
 		res.seq_parameter_set_id = seq_parameter_set_id;
-		res.entropy_coding_mode_flag = 0;
+		res.entropy_coding_mode_flag = ENTROPY_CODING_MODE_FLAG::CAVLC;
 		res.num_ref_idx_l0_active_minus1 = num_ref_idx_l0_active_minus1;
 		res.num_ref_idx_l1_active_minus1 = num_ref_idx_l1_active_minus1;
 		return res;

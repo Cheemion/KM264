@@ -36,6 +36,10 @@ enum NAL_REF_IDC {
 	NON_REFERENCE = 0,
 	REFERENCE = 1
 };
+enum ENTROPY_CODING_MODE_FLAG {
+	CAVLC = 0,
+	CABAC = 1
+};
 using byte = unsigned char;
 using uint16 = unsigned short;
 using uint32 = unsigned int; 
