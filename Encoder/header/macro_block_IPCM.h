@@ -2,7 +2,7 @@
 #include "common.h"
 #include "macro_block.h"
 class MacroBlockIPCM : public MacroBlock {
-private:
+public:
     //ue(v)
     byte mb_type = 25;
     //这之后的数据得8位对其
