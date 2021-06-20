@@ -2,7 +2,11 @@
 #include "nal_unit.h"
 #include "common.h"
 #include "macro_block.h"
+#include "pps.h"
+#include "sps.h"
+#include <list>
 class DecRefPicMarking {
+public:
     /*
     if nal_unit_type == 5, IDR frame
     */
@@ -25,10 +29,10 @@ class DecRefPicMarking {
     byte adaptive_ref_pic_marking_mode_flag = 0;
 };
 class SliceData {
+public:
     //不是I和SI 
         //cavlc的话
     byte mb_skip_run = 0;
-    
 
 };
 class RefPicListReordering {
@@ -48,7 +52,7 @@ public:
     byte ref_pic_list_reordering_flag_l1 = 0;
 };
 class SliceHeader {
-private:
+public:
     /*  ue(v)
         When arbitrary slice order is not allowed as 
         specified in Annex A, the value of first_mb_in_slice shall not be less than the value of first_mb_in_slice for any other 
@@ -118,7 +122,7 @@ private:
         subclause 8.4.1.2.3.
     */
     //B slice 才有的字段
-    byte direct_spatial_mv_pred_flag;
+    byte direct_spatial_mv_pred_flag = 0;
 
     /*
     u(1)
@@ -144,20 +148,100 @@ private:
     se(v)
     slice_qp_delta specifies the initial value of QPY to be used for all the macroblocks in the slice until modified by the 
     value of mb_qp_delta in the macroblock layer. The initial QPY quantisation parameter for the slice is computed as: 
-    SliceQPY = 25 + pic_init_qp_minus26 + slice_qp_delta (7-27) 
+    SliceQPY = 25 + pic_init_qp_minus26 + slice_qp_delta 
     The value of slice_qp_delta shall be limited such that SliceQPY is in the range of -QpBdOffsetY to +50, inclusive.
     */
-   int slice_qp_delta = -1;
+   int slice_qp_delta = 0;
 
 };
 class SliceWithoutPartition : public NalUnit {
-private:
+public:
     SliceHeader sliceHeader;
     SliceData sliceData;
+    ByteString byteString;
+    bool isInitialized = false;
+    PPS* pps;
+    SPS* sps;
+    std::list<MacroBlock*> macroBlocks;
+    int macroBlockSize;
 public:
+    SliceWithoutPartition(){}
+    void addMacroBlock(MacroBlock* mb) {
+        macroBlocks.push_back(mb);
+        macroBlockSize++;
+    }
+    static SliceWithoutPartition generateBaselineSliceWithoutPartition(
+                                                                    PPS* pps, SPS* sps, 
+                                                                    SLICE_TYPE sliceType,
+                                                                    uint32 frameNum,
+                                                                    byte nalUnitType
+                                                                    ) 
+    {
+        SliceWithoutPartition temp;
+        temp.pps = pps;
+        temp.sps = sps;
+        temp.sliceHeader.first_mb_in_slice = 0; // 一个slice一帧, 所有的mb 都在里面
+        temp.sliceHeader.slice_type = sliceType;
+        temp.sliceHeader.pic_parameter_set_id = pps->pic_parameter_set_id;
+        temp.sliceHeader.frame_num = frameNum;
+        static byte idr_pic_id = 0;
+        if(nalUnitType == NAL_UNIT_TYPE::CODEC_SLICE_OF_AN_IDR_PICTURE_SLICE_LAYER_WITHOUT_PARTITIONING_RBSP) {
+            temp.sliceHeader.idr_pic_id = idr_pic_id++;
+        }
+        static uint32 pic_order_cnt_lsb = 0;
+        temp.sliceHeader.pic_order_cnt_lsb = pic_order_cnt_lsb;
+        pic_order_cnt_lsb = pic_order_cnt_lsb + 2;
+        return temp;
+    }    
 	virtual	int getNextSODB(byte& holder) { //0 means end
-		std::cout << "the return value tells how many bit in the holder, from right to left" << std::endl;
-		std::cout << "the holder gives the byte information" << std::endl;
-		return -1;
+        if(!isInitialized) {
+            isInitialized = true;
+            // slice header
+            byteString.ue(sliceHeader.first_mb_in_slice);
+            byteString.ue(sliceHeader.slice_type);
+            byteString.ue(sliceHeader.pic_parameter_set_id);
+            byteString.u(sliceHeader.frame_num, sps->log2_max_frame_num_minus4 + 4);
+            if(nalHeader->nal_unit_type == NAL_UNIT_TYPE::CODEC_SLICE_OF_AN_IDR_PICTURE_SLICE_LAYER_WITHOUT_PARTITIONING_RBSP) {
+                byteString.ue(sliceHeader.idr_pic_id);
+            }
+            if(sps->pic_order_cnt_type == 0) {
+                byteString.u(sliceHeader.pic_order_cnt_lsb, sps->log2_max_pic_order_cnt_lsb_minus4 + 4);
+            }
+            if(sliceHeader.slice_type == SLICE_TYPE::B) {
+               byteString.u(sliceHeader.direct_spatial_mv_pred_flag, 1);
+            }
+            if(sliceHeader.slice_type == SLICE_TYPE::P || sliceHeader.slice_type == SLICE_TYPE::SP || sliceHeader.slice_type == SLICE_TYPE::B) {
+                byteString.u(sliceHeader.num_ref_idx_active_override_flag, 1);
+            }
+            // slice ref_pic_list_reordering
+            if(sliceHeader.slice_type != SLICE_TYPE::I && sliceHeader.slice_type != SLICE_TYPE::SI) {
+                byteString.u(sliceHeader.ref_pic_list_reordering.ref_pic_list_reordering_flag_l0, 1);
+            }
+            if(sliceHeader.slice_type == SLICE_TYPE::B) {
+                byteString.u(sliceHeader.ref_pic_list_reordering.ref_pic_list_reordering_flag_l1, 1);
+            }
+            // slice dec_ref_pic_marking
+            if(nalHeader->nal_ref_idc != NAL_REF_IDC::NON_REFERENCE) {
+                if(nalHeader->nal_unit_type == NAL_UNIT_TYPE::CODEC_SLICE_OF_AN_IDR_PICTURE_SLICE_LAYER_WITHOUT_PARTITIONING_RBSP) {
+                    byteString.u(sliceHeader.dec_ref_pic_marking.no_output_of_prior_pics_flag, 1);
+                    byteString.u(sliceHeader.dec_ref_pic_marking.long_term_reference_flag, 1);
+                } else {
+                    byteString.u(sliceHeader.dec_ref_pic_marking.adaptive_ref_pic_marking_mode_flag, 1);
+                }
+            }
+            byteString.se(sliceHeader.slice_qp_delta);
+            //slice data
+            for(auto i = macroBlocks.begin(); i != macroBlocks.end(); i++) {
+                if(sliceHeader.slice_type != SLICE_TYPE::I && sliceHeader.slice_type != SLICE_TYPE::SI) {
+                    if(!pps->entropy_coding_mode_flag) {
+                        byteString.ue(sliceData.mb_skip_run);
+                    } else {
+
+                    }
+                }
+                (*i)->getNextSODB(byteString);
+            }
+        }
+		return byteString.getNextByte(holder);
 	}
 };

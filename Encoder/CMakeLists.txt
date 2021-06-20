@@ -17,7 +17,5 @@ add_executable (encoder
                 "header/pps.h"
                 "header/slice.h"
                 "header/macro_block.h"
+                "header/macro_block_IPCM.h"
                )
-
-
-

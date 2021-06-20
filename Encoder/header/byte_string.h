@@ -52,7 +52,16 @@ private:
         }
     }
 public:
-    ByteString(): _position(0), buffer(0), data_index(0){}
+    ByteString(): _position(0), buffer(0), data_index(0) {}
+    bool isAligned() {
+        return _position == 0;
+    }
+    int getPosition() {
+        return _position;
+    }
+    void zeroBit() {
+        writeBit(0);
+    }
     void u(uint32 v, int num_bit) {
         writeUint32(v, num_bit);
     }

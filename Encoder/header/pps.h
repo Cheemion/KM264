@@ -2,7 +2,7 @@
 #include "common.h"
 #include "nal_unit.h"
 class PPS : public NalUnit {
-private:
+public:
 	byte pic_parameter_set_id;                      //[0 255] ue(v);
 	byte seq_parameter_set_id;                      //[0 31] ue(v);
 	byte entropy_coding_mode_flag;                  //u(1) entropy_coding_mode_flag is equal to 0, (Exp-Golomb coded, see subclause 9.1 or CAVLC. 1 CABAC

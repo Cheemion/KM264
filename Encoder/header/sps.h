@@ -1,8 +1,8 @@
 #pragma once
 #include "common.h"
 #include "nal_unit.h"
-class SPS : public NalUnit{
-private:
+class SPS : public NalUnit {
+public:
 	byte profile_idc;    //u(8)
 	byte constraint_set0_flag = 0; // u(1) equals 1 obey Baseline profile
 	byte constraint_set1_flag = 0; // u(1) equals 1 obey Main

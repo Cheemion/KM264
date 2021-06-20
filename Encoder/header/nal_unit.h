@@ -32,10 +32,11 @@ struct NalHeader {
 
 class NalUnit {
 public:
+	NalHeader* nalHeader;
+	// holder 用来存需要的数据, index存的数据的起始位置 0代表最高位.
 	virtual	int getNextSODB(byte& holder) { //0 means end
-		std::cout << "the return value tells how many bit in the holder, from right to left" << std::endl;
-		std::cout << "the holder gives the byte information" << std::endl;
-		return -1;
+		std::cout << "NAL layer" << std::endl;
+		return 0;
 	}
 };
 
@@ -48,6 +49,7 @@ public:
 		this->header.nal_ref_idc = nal_ref_idc;
 		this->header.nal_unit_type = nal_unit_type;
 		this->nal_unit_p = nal_unit_p;
+		nal_unit_p->nalHeader = &header;
 	}
 	//每个Nal unit都必须保证写完1个byte
 	// 做了emulation prevention 处理

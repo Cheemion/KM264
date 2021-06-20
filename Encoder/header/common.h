@@ -7,6 +7,13 @@
 #pragma once
 #include <fstream>
 #define emulation_preverntion_three_byte 0x03
+enum SLICE_TYPE {
+	P = 0,
+	B = 1,
+	I = 2,
+	SP = 3,
+	SI = 4
+};
 enum OUTPUT_MODE {
 	ANNEX_B,
 	AVCC

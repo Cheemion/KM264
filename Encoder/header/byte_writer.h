@@ -32,6 +32,14 @@ private:
     }
 public:
     ByteWriter(std::ofstream& os): outFile(os), _position(0), buffer(0){}
+    int getPosition() {
+        return _position;
+    }
+    void align() {
+        while (_position != 0) {
+            writeBit(0);
+        }
+    }
     void write(byte value, int bit_num) {
         if(bit_num > 8 || bit_num <= 0) throw "bit_num > 8 or bit_num < 0";
         if(_position == 0 && bit_num == 8) {
